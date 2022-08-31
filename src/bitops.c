@@ -2,40 +2,48 @@
 #include <stdlib.h>
 #include "bitops.h"
 
-#define BINARY_PREFIX_BYTES (2)
+#define BITS_PER_NIBBLE (4)
+#define PREFIX_BYTES_BIN (2)
+#define PREFIX_BYTES_HEX (2)
 #define EXIT_FAILURE_N (-1)
 #define EXIT_TEST_SUCCESS (1)
 #define EXIT_TEST_FAILURE (0)
 #define NULL_TERMINATOR_BYTE (1)
 
-#define TEST_A_UNUM_DEC (0u)
-#define TEST_A_UNUM_BITS (1u)
-#define TEST_B_UNUM_DEC (1431655765u)
-#define TEST_B_UNUM_BITS (5u)
-#define TEST_C_UNUM_DEC (4294967295u)
-#define TEST_C_UNUM_BITS (32u)
+#define TEST_1A_DEC (18u)
+#define TEST_1A_BITS (8u)
+#define TEST_1B_DEC (65400u)
+#define TEST_1B_BITS (16u)
+#define TEST_1C_DEC (310u)
+#define TEST_1C_BITS (4u)
 
-#define TEST_A_NUM_DEC (0)
-#define TEST_A_NUM_BITS (1u)
-#define TEST_B_NUM_DEC (1431655765)
-#define TEST_B_NUM_BITS (5u)
-#define TEST_C_NUM_DEC (-1)
-#define TEST_C_NUM_BITS (32u)
+#define TEST_2A_DEC (18)
+#define TEST_2A_BITS (8u)
+#define TEST_2B_DEC (-1)
+#define TEST_2B_BITS (4u)
+#define TEST_2C_DEC (-3)
+#define TEST_2C_BITS (8u)
 
+#define TEST_3A_DEC (18u)
+#define TEST_3A_BITS (8u)
+#define TEST_3B_DEC (18u)
+#define TEST_3B_BITS (16u)
+#define TEST_3C_DEC (65400)
+#define TEST_3C_BITS (16u)
 
 #define UINT32_T_BITS (32)
 
-char TEST_A_UNUM_BIN[BINARY_PREFIX_BYTES + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b0";
-char TEST_B_UNUM_BIN[BINARY_PREFIX_BYTES + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b10101";
-char TEST_C_UNUM_BIN[BINARY_PREFIX_BYTES + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b11111111111111111111111111111111";
-char TEST_A_NUM_BIN[BINARY_PREFIX_BYTES + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b0";
-char TEST_B_NUM_BIN[BINARY_PREFIX_BYTES + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b10101";
-char TEST_C_NUM_BIN[BINARY_PREFIX_BYTES + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b11111111111111111111111111111111";
+char TEST_1A_EXPECTED[PREFIX_BYTES_BIN + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b00010010";
+char TEST_1B_EXPECTED[PREFIX_BYTES_BIN + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b1111111101111000";
+char TEST_1C_EXPECTED[PREFIX_BYTES_BIN + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "";
 
-uint32_t BIT_0_HIGH = 0x00000001;
-uint32_t BIT_0_LOW = 0x00000000;
-uint32_t BIT_31_HIGH = 0x80000000;
-uint32_t BIT_31_LOW = 0x00000000;
+char TEST_2A_EXPECTED[PREFIX_BYTES_BIN + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b00010010";
+char TEST_2B_EXPECTED[PREFIX_BYTES_BIN + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b1111";
+char TEST_2C_EXPECTED[PREFIX_BYTES_BIN + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b11111101";
+
+char TEST_3A_EXPECTED[PREFIX_BYTES_HEX + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0x12";
+char TEST_3B_EXPECTED[PREFIX_BYTES_HEX + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0x0012";
+char TEST_3C_EXPECTED[PREFIX_BYTES_HEX + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0xFF78";
 
 /**
  * \fn uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits)
@@ -49,12 +57,11 @@ uint32_t BIT_31_LOW = 0x00000000;
  * \return If successful, returns the number of characters written to str, not including the terminal \0. In the case of an error, the function returns a negative value, and str is set to the empty string.
  */
 int uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
-	assert(size > (size_t)nbits);
+	assert(size > (size_t)nbits + PREFIX_BYTES_BIN);
 	assert(nbits > 0);
 
 	int i;
-	int num_chars = 0;
-	int current_byte = BINARY_PREFIX_BYTES;
+	int current_byte = PREFIX_BYTES_BIN;
 
 	str[0] = '0';
 	str[1] = 'b';
@@ -88,12 +95,11 @@ int uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
  * \return If successful, returns the number of characters written to str, not including the terminal \0. In the case of an error, the function returns a negative value, and str is set to the empty string.
  */
 int int_to_binstr(char* str, size_t size, int32_t num, uint8_t nbits) {
-	assert(size > (size_t)nbits);
+	assert(size > (size_t)nbits + PREFIX_BYTES_BIN);
 	assert(nbits > 0);
 
 	int i;
-	int num_chars = 0;
-	int current_byte = BINARY_PREFIX_BYTES;
+	int current_byte = PREFIX_BYTES_BIN;
 
 	str[0] = '0';
 	str[1] = 'b';
@@ -127,7 +133,81 @@ int int_to_binstr(char* str, size_t size, int32_t num, uint8_t nbits) {
  * \return If successful, returns the number of characters written to str, not including the terminal \0. In the case of an error, the function returns a negative value, and str is set to the empty string.
  */
 int uint_to_hexstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
+	assert(size > (size_t)nbits + PREFIX_BYTES_HEX);
+	assert((nbits == 4) || (nbits == 8) || (nbits == 16) || (nbits == 32));
 
+	int i;
+	int current_byte = PREFIX_BYTES_HEX;
+	uint8_t current_nibble;
+
+	str[0] = '0';
+	str[1] = 'x';
+
+	for (i = nbits; i > 0; i = i - 4) {
+		current_nibble = 0;
+		//printf("--- %u & %u, i = %u\n", num, (uint32_t)(1 << i) | (uint32_t)(1 << (i - 1)) | (uint32_t)(1 << (i - 2)) | (uint32_t)(1 << (i - 3)), i);
+		current_nibble = (((num & (uint32_t)(1 << (i - 1))) | (num & (uint32_t)(1 << (i - 2))) | (num & (uint32_t)(1 << (i - 3))) | (num & (uint32_t)(1 << (i - 4)))) >> (i - BITS_PER_NIBBLE));
+
+		switch (current_nibble) {
+			case 0b1111:
+				str[current_byte] = 'F';
+				break;
+			case 0b1110:
+				str[current_byte] = 'E';
+				break;
+			case 0b1101:
+				str[current_byte] = 'D';
+				break;
+			case 0b1100:
+				str[current_byte] = 'C';
+				break;
+			case 0b1011:
+				str[current_byte] = 'B';
+				break;
+			case 0b1010:
+				str[current_byte] = 'A';
+				break;
+			case 0b1001:
+				str[current_byte] = '9';
+				break;
+			case 0b1000:
+				str[current_byte] = '8';
+				break;
+			case 0b0111:
+				str[current_byte] = '7';
+				break;
+			case 0b0110:
+				str[current_byte] = '6';
+				break;
+			case 0b0101:
+				str[current_byte] = '5';
+				break;
+			case 0b0100:
+				str[current_byte] = '4';
+				break;
+			case 0b0011:
+				str[current_byte] = '3';
+				break;
+			case 0b0010:
+				str[current_byte] = '2';
+				break;
+			case 0b0001:
+				str[current_byte] = '1';
+				break;
+			case 0b0000:
+				str[current_byte] = '0';
+				break;
+			default:
+				return EXIT_TEST_FAILURE;
+		}
+		//printf(" - str[%d] = %c, current_nibble = %u\n", current_byte, str[current_byte], current_nibble);
+		current_byte++;
+	}
+
+	///< Terminate str with NULL
+	str[current_byte] = '\0';
+
+	return current_byte;
 }
 
 /**
@@ -176,7 +256,7 @@ int test_uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
 	int i;
 	int num_chars;
 
-	num_chars = uint_to_binstr(str, size, (uint32_t)TEST_A_UNUM_DEC, TEST_A_UNUM_BITS);
+	num_chars = uint_to_binstr(str, size, (uint32_t)TEST_1A_DEC, TEST_1A_BITS);
 
 	if (num_chars < 0) {
 		printf("test_uint_to_binstr: TEST_A (FAILURE): Return code %d from uint_to_binstr", num_chars);
@@ -184,16 +264,16 @@ int test_uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
 	}
 
 	for (i = 0; i < num_chars; i++) {
-		if (str[i] != TEST_A_UNUM_BIN[i]) {
-			printf("test_uint_to_binstr: TEST_A (FAILURE): num = %u, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_A_UNUM_DEC, (uint8_t)TEST_A_UNUM_BITS, i, TEST_A_UNUM_BIN[i], (uint8_t)TEST_A_UNUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-			printf("                                       num = %u, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_A_UNUM_DEC, (uint8_t)TEST_A_UNUM_BITS, i, str[i], num_chars);
-			return EXIT_TEST_FAILURE;
+		if (str[i] != TEST_1A_EXPECTED[i]) {
+			printf("test_uint_to_binstr: TEST_A (FAILURE): num = %u, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_1A_DEC, (uint8_t)TEST_1A_BITS, i, TEST_1A_EXPECTED[i], (uint8_t)TEST_1A_BITS + (uint8_t)PREFIX_BYTES_BIN);
+			printf("                                       num = %u, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_1A_DEC, (uint8_t)TEST_1A_BITS, i, str[i], num_chars);
+			//return EXIT_TEST_FAILURE;
 		}
 	}
-	printf("test_uint_to_binstr: TEST_A (SUCCESS): num = %u, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_A_UNUM_DEC, (uint8_t)TEST_A_UNUM_BITS, TEST_A_UNUM_BIN, (uint8_t)TEST_A_UNUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-	printf("                                       num = %u, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_A_UNUM_DEC, (uint8_t)TEST_A_UNUM_BITS, str,num_chars);
+	printf("test_uint_to_binstr: TEST_A (SUCCESS): num = %u, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_1A_DEC, (uint8_t)TEST_1A_BITS, TEST_1A_EXPECTED, (uint8_t)TEST_1A_BITS + (uint8_t)PREFIX_BYTES_BIN);
+	printf("                                       num = %u, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_1A_DEC, (uint8_t)TEST_1A_BITS, str,num_chars);
 
-	num_chars = uint_to_binstr(str, size, (uint32_t)TEST_B_UNUM_DEC, TEST_B_UNUM_BITS);
+	num_chars = uint_to_binstr(str, size, (uint32_t)TEST_1B_DEC, TEST_1B_BITS);
 
 	if (num_chars < 0) {
 		printf("test_uint_to_binstr: TEST_B (FAILURE): Return code %d from uint_to_binstr", num_chars);
@@ -201,16 +281,16 @@ int test_uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
 	}
 
 	for (i = 0; i < num_chars; i++) {
-		if (str[i] != TEST_B_UNUM_BIN[i]) {
-			printf("test_uint_to_binstr: TEST_B (FAILURE): num = %u, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_B_UNUM_DEC, (uint8_t)TEST_B_UNUM_BITS, i, TEST_B_UNUM_BIN[i], (uint8_t)TEST_B_UNUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-			printf("                                       num = %u, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_B_UNUM_DEC, (uint8_t)TEST_B_UNUM_BITS, i, str[i], num_chars);
+		if (str[i] != TEST_1B_EXPECTED[i]) {
+			printf("test_uint_to_binstr: TEST_B (FAILURE): num = %u, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_1B_DEC, (uint8_t)TEST_1B_BITS, i, TEST_1B_EXPECTED[i], (uint8_t)TEST_1B_BITS + (uint8_t)PREFIX_BYTES_BIN);
+			printf("                                       num = %u, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_1B_DEC, (uint8_t)TEST_1B_BITS, i, str[i], num_chars);
 			return EXIT_TEST_FAILURE;
 		}
 	}
-	printf("test_uint_to_binstr: TEST_B (SUCCESS): num = %u, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_B_UNUM_DEC, (uint8_t)TEST_B_UNUM_BITS, TEST_B_UNUM_BIN, (uint8_t)TEST_B_UNUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-	printf("                                       num = %u, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_B_UNUM_DEC, (uint8_t)TEST_B_UNUM_BITS, str, num_chars);
+	printf("test_uint_to_binstr: TEST_B (SUCCESS): num = %u, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_1B_DEC, (uint8_t)TEST_1B_BITS, TEST_1B_EXPECTED, (uint8_t)TEST_1B_BITS + (uint8_t)PREFIX_BYTES_BIN);
+	printf("                                       num = %u, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_1B_DEC, (uint8_t)TEST_1B_BITS, str, num_chars);
 
-	num_chars = uint_to_binstr(str, size, (uint32_t)TEST_C_UNUM_DEC, TEST_C_UNUM_BITS);
+	num_chars = uint_to_binstr(str, size, (uint32_t)TEST_1C_DEC, TEST_1C_BITS);
 
 	if (num_chars < 0) {
 		printf("test_uint_to_binstr: TEST_C (FAILURE): Return code %d from uint_to_binstr", num_chars);
@@ -218,14 +298,14 @@ int test_uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
 	}
 
 	for (i = 0; i < num_chars; i++) {
-		if (str[i] != TEST_C_UNUM_BIN[i]) {
-			printf("test_uint_to_binstr: TEST_C (FAILURE): num = %u, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_C_UNUM_DEC, (uint8_t)TEST_C_UNUM_BITS, i, TEST_C_UNUM_BIN[i], (uint8_t)TEST_C_UNUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-			printf("                                       num = %u, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_C_UNUM_DEC, (uint8_t)TEST_C_UNUM_BITS, i, str[i], num_chars);
+		if (str[i] != TEST_1C_EXPECTED[i]) {
+			printf("test_uint_to_binstr: TEST_C (FAILURE): num = %u, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_1C_DEC, (uint8_t)TEST_1C_BITS, i, TEST_1C_EXPECTED[i], (uint8_t)TEST_1C_BITS + (uint8_t)PREFIX_BYTES_BIN);
+			printf("                                       num = %u, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_1C_DEC, (uint8_t)TEST_1C_BITS, i, str[i], num_chars);
 			return EXIT_TEST_FAILURE;
 		}
 	}
-	printf("test_uint_to_binstr: TEST_C (SUCCESS): num = %u, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_C_UNUM_DEC, (uint8_t)TEST_C_UNUM_BITS, TEST_C_UNUM_BIN, (uint8_t)TEST_C_UNUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-	printf("                                       num = %u, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_C_UNUM_DEC, (uint8_t)TEST_C_UNUM_BITS, str, num_chars);
+	printf("test_uint_to_binstr: TEST_C (SUCCESS): num = %u, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_1C_DEC, (uint8_t)TEST_1C_BITS, TEST_1C_EXPECTED, (uint8_t)TEST_1C_BITS + (uint8_t)PREFIX_BYTES_BIN);
+	printf("                                       num = %u, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_1C_DEC, (uint8_t)TEST_1C_BITS, str, num_chars);
 
 	return EXIT_TEST_SUCCESS;
 }
@@ -234,7 +314,7 @@ int test_int_to_binstr(char* str, size_t size, int32_t num, uint8_t nbits) {
 	int i;
 	int num_chars;
 
-	num_chars = int_to_binstr(str, size, (uint32_t)TEST_A_NUM_DEC, TEST_A_NUM_BITS);
+	num_chars = int_to_binstr(str, size, (uint32_t)TEST_2A_DEC, TEST_2A_BITS);
 
 	if (num_chars < 0) {
 		printf("test_int_to_binstr: TEST_A (FAILURE): Return code %d from int_to_binstr", num_chars);
@@ -242,16 +322,16 @@ int test_int_to_binstr(char* str, size_t size, int32_t num, uint8_t nbits) {
 	}
 
 	for (i = 0; i < num_chars; i++) {
-		if (str[i] != TEST_A_NUM_BIN[i]) {
-			printf("test_int_to_binstr: TEST_A (FAILURE): num = %d, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_A_NUM_DEC, (uint8_t)TEST_A_NUM_BITS, i, TEST_A_NUM_BIN[i], (uint8_t)TEST_A_NUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-			printf("                                      num = %d, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_A_NUM_DEC, (uint8_t)TEST_A_NUM_BITS, i, str[i], num_chars);
+		if (str[i] != TEST_2A_EXPECTED[i]) {
+			printf("test_int_to_binstr: TEST_A (FAILURE): num = %d, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_2A_DEC, (uint8_t)TEST_2A_BITS, i, TEST_2A_EXPECTED[i], (uint8_t)TEST_2A_BITS + (uint8_t)PREFIX_BYTES_BIN);
+			printf("                                      num = %d, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_2A_DEC, (uint8_t)TEST_2A_BITS, i, str[i], num_chars);
 			return EXIT_TEST_FAILURE;
 		}
 	}
-	printf("test_int_to_binstr: TEST_A (SUCCESS): num = %d, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_A_NUM_DEC, (uint8_t)TEST_A_NUM_BITS, TEST_A_NUM_BIN, (uint8_t)TEST_A_NUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-	printf("                                      num = %d, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_A_NUM_DEC, (uint8_t)TEST_A_NUM_BITS, str, num_chars);
+	printf("test_int_to_binstr: TEST_A (SUCCESS): num = %d, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_2A_DEC, (uint8_t)TEST_2A_BITS, TEST_2A_EXPECTED, (uint8_t)TEST_2A_BITS + (uint8_t)PREFIX_BYTES_BIN);
+	printf("                                      num = %d, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_2A_DEC, (uint8_t)TEST_2A_BITS, str, num_chars);
 
-	num_chars = int_to_binstr(str, size, (uint32_t)TEST_B_NUM_DEC, TEST_B_NUM_BITS);
+	num_chars = int_to_binstr(str, size, (uint32_t)TEST_2B_DEC, TEST_2B_BITS);
 
 	if (num_chars < 0) {
 		printf("test_int_to_binstr: TEST_B (FAILURE): Return code %d from int_to_binstr", num_chars);
@@ -259,16 +339,16 @@ int test_int_to_binstr(char* str, size_t size, int32_t num, uint8_t nbits) {
 	}
 
 	for (i = 0; i < num_chars; i++) {
-		if (str[i] != TEST_B_NUM_BIN[i]) {
-			printf("test_int_to_binstr: TEST_B (FAILURE): num = %d, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_B_NUM_DEC, (uint8_t)TEST_B_NUM_BITS, i, TEST_B_NUM_BIN[i], (uint8_t)TEST_B_NUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-			printf("                                      num = %d, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_B_NUM_DEC, (uint8_t)TEST_B_NUM_BITS, i, str[i], num_chars);
+		if (str[i] != TEST_2B_EXPECTED[i]) {
+			printf("test_int_to_binstr: TEST_B (FAILURE): num = %d, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_2B_DEC, (uint8_t)TEST_2B_BITS, i, TEST_2B_EXPECTED[i], (uint8_t)TEST_2B_BITS + (uint8_t)PREFIX_BYTES_BIN);
+			printf("                                      num = %d, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_2B_DEC, (uint8_t)TEST_2B_BITS, i, str[i], num_chars);
 			return EXIT_TEST_FAILURE;
 		}
 	}
-	printf("test_int_to_binstr: TEST_B (SUCCESS): num = %d, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_B_NUM_DEC, (uint8_t)TEST_B_NUM_BITS, TEST_B_NUM_BIN, (uint8_t)TEST_B_NUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-	printf("                                      num = %d, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_B_NUM_DEC, (uint8_t)TEST_B_NUM_BITS, str, num_chars);
+	printf("test_int_to_binstr: TEST_B (SUCCESS): num = %d, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_2B_DEC, (uint8_t)TEST_2B_BITS, TEST_2B_EXPECTED, (uint8_t)TEST_2B_BITS + (uint8_t)PREFIX_BYTES_BIN);
+	printf("                                      num = %d, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_2B_DEC, (uint8_t)TEST_2B_BITS, str, num_chars);
 
-	num_chars = int_to_binstr(str, size, (uint32_t)TEST_C_NUM_DEC, TEST_C_NUM_BITS);
+	num_chars = int_to_binstr(str, size, (uint32_t)TEST_2C_DEC, TEST_2C_BITS);
 
 	if (num_chars < 0) {
 		printf("test_int_to_binstr: TEST_C (FAILURE): Return code %d from int_to_binstr", num_chars);
@@ -276,20 +356,74 @@ int test_int_to_binstr(char* str, size_t size, int32_t num, uint8_t nbits) {
 	}
 
 	for (i = 0; i < num_chars; i++) {
-		if (str[i] != TEST_C_NUM_BIN[i]) {
-			printf("test_int_to_binstr: TEST_C (FAILURE): num = %d, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_C_NUM_DEC, (uint8_t)TEST_C_NUM_BITS, i, TEST_C_NUM_BIN[i], (uint8_t)TEST_C_NUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-			printf("                                      num = %d, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_C_NUM_DEC, (uint8_t)TEST_C_NUM_BITS, i, str[i], num_chars);
+		if (str[i] != TEST_2C_EXPECTED[i]) {
+			printf("test_int_to_binstr: TEST_C (FAILURE): num = %d, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_2C_DEC, (uint8_t)TEST_2C_BITS, i, TEST_2C_EXPECTED[i], (uint8_t)TEST_2C_BITS + (uint8_t)PREFIX_BYTES_BIN);
+			printf("                                      num = %d, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_2C_DEC, (uint8_t)TEST_2C_BITS, i, str[i], num_chars);
 			return EXIT_TEST_FAILURE;
 		}
 	}
-	printf("test_int_to_binstr: TEST_C (SUCCESS): num = %d, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_C_NUM_DEC, (uint8_t)TEST_C_NUM_BITS, TEST_C_NUM_BIN, (uint8_t)TEST_C_NUM_BITS + (uint8_t)BINARY_PREFIX_BYTES);
-	printf("                                      num = %d, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_C_NUM_DEC, (uint8_t)TEST_C_NUM_BITS, str, num_chars);
+	printf("test_int_to_binstr: TEST_C (SUCCESS): num = %d, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_2C_DEC, (uint8_t)TEST_2C_BITS, TEST_2C_EXPECTED, (uint8_t)TEST_2C_BITS + (uint8_t)PREFIX_BYTES_BIN);
+	printf("                                      num = %d, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_2C_DEC, (uint8_t)TEST_2C_BITS, str, num_chars);
 
 	return EXIT_TEST_SUCCESS;
 }
 
 int test_uint_to_hexstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
+	int i;
+	int num_chars;
 
+	num_chars = uint_to_hexstr(str, size, (uint32_t)TEST_3A_DEC, TEST_3A_BITS);
+
+	if (num_chars < 0) {
+		printf("test_uint_to_hexstr: TEST_A (FAILURE): Return code %d from uint_to_hexstr", num_chars);
+		return EXIT_TEST_FAILURE;
+	}
+
+	for (i = 0; i < num_chars; i++) {
+		if (str[i] != TEST_3A_EXPECTED[i]) {
+			printf("test_uint_to_hexstr: TEST_A (FAILURE): num = %u, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_3A_DEC, (uint8_t)TEST_3A_BITS, i, TEST_3A_EXPECTED[i], (uint8_t)(TEST_3A_BITS/BITS_PER_NIBBLE) + (uint8_t)PREFIX_BYTES_HEX);
+			printf("                                       num = %u, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_3A_DEC, (uint8_t)TEST_3A_BITS, i, str[i], num_chars);
+			//return EXIT_TEST_FAILURE;
+		}
+	}
+	printf("test_uint_to_hexstr: TEST_A (SUCCESS): num = %u, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_3A_DEC, (uint8_t)TEST_3A_BITS, TEST_3A_EXPECTED, (uint8_t)(TEST_3A_BITS/BITS_PER_NIBBLE) + (uint8_t)PREFIX_BYTES_HEX);
+	printf("                                       num = %u, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_3A_DEC, (uint8_t)TEST_3A_BITS, str, num_chars);
+
+	num_chars = uint_to_hexstr(str, size, (uint32_t)TEST_3B_DEC, TEST_3B_BITS);
+
+	if (num_chars < 0) {
+		printf("test_uint_to_hexstr: TEST_B (FAILURE): Return code %d from uint_to_hexstr", num_chars);
+		return EXIT_TEST_FAILURE;
+	}
+
+	for (i = 0; i < num_chars; i++) {
+		if (str[i] != TEST_3B_EXPECTED[i]) {
+			printf("test_uint_to_hexstr: TEST_B (FAILURE): num = %u, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_3B_DEC, (uint8_t)TEST_3B_BITS, i, TEST_3B_EXPECTED[i], (uint8_t)(TEST_3B_BITS/BITS_PER_NIBBLE) + (uint8_t)PREFIX_BYTES_HEX);
+			printf("                                       num = %u, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_3B_DEC, (uint8_t)TEST_3B_BITS, i, str[i], num_chars);
+			//return EXIT_TEST_FAILURE;
+		}
+	}
+	printf("test_uint_to_hexstr: TEST_B (SUCCESS): num = %u, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_3B_DEC, (uint8_t)TEST_3B_BITS, TEST_3B_EXPECTED, (uint8_t)(TEST_3B_BITS/BITS_PER_NIBBLE) + (uint8_t)PREFIX_BYTES_HEX);
+	printf("                                       num = %u, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_3B_DEC, (uint8_t)TEST_3B_BITS, str, num_chars);
+
+	num_chars = uint_to_hexstr(str, size, (uint32_t)TEST_3C_DEC, TEST_3C_BITS);
+
+	if (num_chars < 0) {
+		printf("test_uint_to_hexstr: TEST_C (FAILURE): Return code %d from uint_to_hexstr", num_chars);
+		return EXIT_TEST_FAILURE;
+	}
+
+	for (i = 0; i < num_chars; i++) {
+		if (str[i] != TEST_3C_EXPECTED[i]) {
+			printf("test_uint_to_hexstr: TEST_C (FAILURE): num = %u, nbits = %u, EXPECT[%d] = %c, return value = %d\n", (uint32_t)TEST_3C_DEC, (uint8_t)TEST_3C_BITS, i, TEST_3C_EXPECTED[i], (uint8_t)(TEST_3C_BITS/BITS_PER_NIBBLE) + (uint8_t)PREFIX_BYTES_HEX);
+			printf("                                       num = %u, nbits = %u, RESULT[%d] = %c, return value = %d\n", (uint32_t)TEST_3C_DEC, (uint8_t)TEST_3C_BITS, i, str[i], num_chars);
+			//return EXIT_TEST_FAILURE;
+		}
+	}
+	printf("test_uint_to_hexstr: TEST_C (SUCCESS): num = %u, nbits = %u, EXPECT = %s, return value = %d\n", (uint32_t)TEST_3C_DEC, (uint8_t)TEST_3C_BITS, TEST_3C_EXPECTED, (uint8_t)(TEST_3C_BITS/BITS_PER_NIBBLE) + (uint8_t)PREFIX_BYTES_HEX);
+	printf("                                       num = %u, nbits = %u, RESULT = %s, return value = %d\n", (uint32_t)TEST_3C_DEC, (uint8_t)TEST_3C_BITS, str, num_chars);
+
+	return EXIT_TEST_SUCCESS;
 }
 
 uint32_t test_twiggle_bit(uint32_t input, int bit, operation_t operation) {
