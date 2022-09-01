@@ -3,12 +3,15 @@
 #include "bitops.h"
 
 #define BITS_PER_NIBBLE (4)
-#define PREFIX_BYTES_BIN (2)
-#define PREFIX_BYTES_HEX (2)
+
+#define EXIT_BIT_FAILURE (0xFFFFFFFF)
 #define EXIT_FAILURE_N (-1)
 #define EXIT_TEST_SUCCESS (1)
 #define EXIT_TEST_FAILURE (0)
+
 #define NULL_TERMINATOR_BYTE (1)
+#define PREFIX_BYTES_BIN (2)
+#define PREFIX_BYTES_HEX (2)
 
 #define TEST_1A_DEC (18u)
 #define TEST_1A_BITS (8u)
@@ -31,6 +34,16 @@
 #define TEST_3C_DEC (65400)
 #define TEST_3C_BITS (16u)
 
+#define TEST_4A_DEC (0u)
+#define TEST_4A_BIT (0)
+#define TEST_4A_OP (SET)
+#define TEST_4B_DEC (0u)
+#define TEST_4B_BIT (3)
+#define TEST_4B_OP (SET)
+#define TEST_4C_DEC (29495u)
+#define TEST_4C_BIT (5)
+#define TEST_4C_OP (TOGGLE)
+
 #define UINT32_T_BITS (32)
 
 char TEST_1A_EXPECTED[PREFIX_BYTES_BIN + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b00010010";
@@ -44,6 +57,10 @@ char TEST_2C_EXPECTED[PREFIX_BYTES_BIN + UINT32_T_BITS + NULL_TERMINATOR_BYTE] =
 char TEST_3A_EXPECTED[PREFIX_BYTES_HEX + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0x12";
 char TEST_3B_EXPECTED[PREFIX_BYTES_HEX + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0x0012";
 char TEST_3C_EXPECTED[PREFIX_BYTES_HEX + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0xFF78";
+
+uint32_t TEST_4A_EXPECTED = 1u;
+uint32_t TEST_4B_EXPECTED = 8u;
+uint32_t TEST_4C_EXPECTED = 29463u;
 
 /**
  * \fn uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits)
@@ -221,7 +238,25 @@ int uint_to_hexstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
  * \return If successful, returns the transformed 32-bit value. In the case of an error, the function returns 0xFFFFFFFF.
  */
 uint32_t twiggle_bit(uint32_t input, int bit, operation_t operation) {
+	assert((UINT32_T_BITS > bit) && (bit >= 0));
+	assert((operation == CLEAR) || (operation == SET) || (operation == TOGGLE));
 
+	switch (operation) {
+		case CLEAR:
+			input &= (0xFFFFFFFF & (0 << bit));
+			break;
+		case SET:
+			input |= (1 << bit);
+			break;
+		case TOGGLE:
+			input ^= (1 << bit);
+			break;
+		default:
+			return EXIT_BIT_FAILURE;
+			break;
+	}
+
+	return input;
 }
 
 /**
@@ -427,7 +462,40 @@ int test_uint_to_hexstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
 }
 
 uint32_t test_twiggle_bit(uint32_t input, int bit, operation_t operation) {
+	int i;
+	int output;
 
+	output = twiggle_bit((uint32_t)TEST_4A_DEC, (int)TEST_4A_BIT, (operation_t)TEST_4A_OP);
+
+	if (output == EXIT_BIT_FAILURE) {
+		printf("test_twiggle_bit: TEST_A (FAILURE): Return code %d from twiggle_bit", output);
+		return EXIT_TEST_FAILURE;
+	}
+
+	printf("test_twiggle_bit: TEST_A (SUCCESS): input = %u, bit = %d, operation = %s EXPECT = %u\n", (uint32_t)TEST_4A_DEC, (int)TEST_4A_BIT, ((TEST_4A_OP == CLEAR) ? "CLEAR" : ((TEST_4A_OP == SET) ? "SET" : ((TEST_4A_OP == TOGGLE) ? "TOGGLE" : "UNKNOWN"))), TEST_4A_EXPECTED);
+	printf("                                    input = %u, bit = %d, operation = %s RESULT = %u\n", (uint32_t)TEST_4A_DEC, (int)TEST_4A_BIT, ((TEST_4A_OP == CLEAR) ? "CLEAR" : ((TEST_4A_OP == SET) ? "SET" : ((TEST_4A_OP == TOGGLE) ? "TOGGLE" : "UNKNOWN"))), output);
+
+	output = twiggle_bit((uint32_t)TEST_4B_DEC, (int)TEST_4B_BIT, (operation_t)TEST_4B_OP);
+
+	if (output == EXIT_BIT_FAILURE) {
+		printf("test_twiggle_bit: TEST_B (FAILURE): Return code %d from twiggle_bit", output);
+		return EXIT_TEST_FAILURE;
+	}
+
+	printf("test_twiggle_bit: TEST_B (SUCCESS): input = %u, bit = %d, operation = %s EXPECT = %u\n", (uint32_t)TEST_4B_DEC, (int)TEST_4B_BIT, ((TEST_4B_OP == CLEAR) ? "CLEAR" : ((TEST_4B_OP == SET) ? "SET" : ((TEST_4B_OP == TOGGLE) ? "TOGGLE" : "UNKNOWN"))), TEST_4B_EXPECTED);
+	printf("                                    input = %u, bit = %d, operation = %s RESULT = %u\n", (uint32_t)TEST_4B_DEC, (int)TEST_4B_BIT, ((TEST_4B_OP == CLEAR) ? "CLEAR" : ((TEST_4B_OP == SET) ? "SET" : ((TEST_4B_OP == TOGGLE) ? "TOGGLE" : "UNKNOWN"))), output);
+
+	output = twiggle_bit((uint32_t)TEST_4C_DEC, (int)TEST_4C_BIT, (operation_t)TEST_4C_OP);
+
+	if (output == EXIT_BIT_FAILURE) {
+		printf("test_twiggle_bit: TEST_C (FAILURE): Return code %d from twiggle_bit", output);
+		return EXIT_TEST_FAILURE;
+	}
+
+	printf("test_twiggle_bit: TEST_C (SUCCESS): input = %u, bit = %d, operation = %s EXPECT = %u\n", (uint32_t)TEST_4C_DEC, (int)TEST_4C_BIT, ((TEST_4C_OP == CLEAR) ? "CLEAR" : ((TEST_4C_OP == SET) ? "SET" : ((TEST_4C_OP == TOGGLE) ? "TOGGLE" : "UNKNOWN"))), TEST_4C_EXPECTED);
+	printf("                                    input = %u, bit = %d, operation = %s RESULT = %u\n", (uint32_t)TEST_4C_DEC, (int)TEST_4C_BIT, ((TEST_4C_OP == CLEAR) ? "CLEAR" : ((TEST_4C_OP == SET) ? "SET" : ((TEST_4C_OP == TOGGLE) ? "TOGGLE" : "UNKNOWN"))), output);
+
+	return EXIT_TEST_SUCCESS;
 }
 
 uint32_t test_grab_three_bits(uint32_t input, int start_bit) {
