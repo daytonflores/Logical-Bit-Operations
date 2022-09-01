@@ -13,6 +13,7 @@ int main(void) {
 	test_int_to_binstr(str, (size_t)PREFIX_BYTES_BIN + (size_t)UINT32_T_BITS + (size_t)NULL_TERMINATOR_BYTE, 0, (uint8_t)UINT32_T_BITS);
 	test_uint_to_hexstr(str, (size_t)PREFIX_BYTES_HEX + (size_t)UINT32_T_BITS + (size_t)NULL_TERMINATOR_BYTE, 0, (uint8_t)UINT32_T_BITS);
 	test_twiggle_bit((uint32_t)0, (int)0, (operation_t)0);
+	test_grab_three_bits((uint32_t)0, (int)0);
 
 	return EXIT_SUCCESS;
 }

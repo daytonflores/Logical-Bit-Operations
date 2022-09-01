@@ -44,6 +44,11 @@
 #define TEST_4C_BIT (5)
 #define TEST_4C_OP (TOGGLE)
 
+#define TEST_5A_DEC (29495u)
+#define TEST_5A_SBIT (6)
+#define TEST_5B_DEC (29495u)
+#define TEST_5B_SBIT (7)
+
 #define UINT32_T_BITS (32)
 
 char TEST_1A_EXPECTED[PREFIX_BYTES_BIN + UINT32_T_BITS + NULL_TERMINATOR_BYTE] = "0b00010010";
@@ -62,6 +67,9 @@ uint32_t TEST_4A_EXPECTED = 1u;
 uint32_t TEST_4B_EXPECTED = 8u;
 uint32_t TEST_4C_EXPECTED = 29463u;
 
+uint32_t TEST_5A_EXPECTED = 4u;
+uint32_t TEST_5B_EXPECTED = 6u;
+
 /**
  * \fn uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits)
  * \brief Stores binary representation of a 32-bit unsigned int into a null-terminated string
@@ -74,6 +82,7 @@ uint32_t TEST_4C_EXPECTED = 29463u;
  * \return If successful, returns the number of characters written to str, not including the terminal \0. In the case of an error, the function returns a negative value, and str is set to the empty string.
  */
 int uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
+	assert(str != NULL);
 	assert(size > (size_t)nbits + PREFIX_BYTES_BIN);
 	assert(nbits > 0);
 
@@ -112,6 +121,7 @@ int uint_to_binstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
  * \return If successful, returns the number of characters written to str, not including the terminal \0. In the case of an error, the function returns a negative value, and str is set to the empty string.
  */
 int int_to_binstr(char* str, size_t size, int32_t num, uint8_t nbits) {
+	assert(str != NULL);
 	assert(size > (size_t)nbits + PREFIX_BYTES_BIN);
 	assert(nbits > 0);
 
@@ -150,6 +160,7 @@ int int_to_binstr(char* str, size_t size, int32_t num, uint8_t nbits) {
  * \return If successful, returns the number of characters written to str, not including the terminal \0. In the case of an error, the function returns a negative value, and str is set to the empty string.
  */
 int uint_to_hexstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
+	assert(str != NULL);
 	assert(size > (size_t)nbits + PREFIX_BYTES_HEX);
 	assert((nbits == 4) || (nbits == 8) || (nbits == 16) || (nbits == 32));
 
@@ -269,7 +280,13 @@ uint32_t twiggle_bit(uint32_t input, int bit, operation_t operation) {
  * \return If successful, returns a 32-bit value whose 3 least significant bits are the 3 bits grabbed from input, in respective order. In the case of an error, the function returns 0xFFFFFFFF.
  */
 uint32_t grab_three_bits(uint32_t input, int start_bit) {
+	assert((UINT32_T_BITS - 3 >= start_bit) && (start_bit >= 0));
 
+	uint32_t output = 0;
+
+	output = ((input & (1 << (start_bit))) | (input & (1 << (start_bit + 1))) | (input & (1 << (start_bit + 2)))) >> start_bit;
+
+	return output;
 }
 
 /**
@@ -462,8 +479,7 @@ int test_uint_to_hexstr(char* str, size_t size, uint32_t num, uint8_t nbits) {
 }
 
 uint32_t test_twiggle_bit(uint32_t input, int bit, operation_t operation) {
-	int i;
-	int output;
+	uint32_t output;
 
 	output = twiggle_bit((uint32_t)TEST_4A_DEC, (int)TEST_4A_BIT, (operation_t)TEST_4A_OP);
 
@@ -499,7 +515,30 @@ uint32_t test_twiggle_bit(uint32_t input, int bit, operation_t operation) {
 }
 
 uint32_t test_grab_three_bits(uint32_t input, int start_bit) {
+	int i;
+	uint32_t output;
 
+	output = grab_three_bits((uint32_t)TEST_5A_DEC, (int)TEST_5A_SBIT);
+
+	if (output == EXIT_BIT_FAILURE) {
+		printf("test_grab_three_bits: TEST_A (FAILURE): Return code %d from grab_three_bits", output);
+		return EXIT_TEST_FAILURE;
+	}
+
+	printf("test_grab_three_bits: TEST_A (SUCCESS): input = %u, start_bit = %d, EXPECT = %u\n", (uint32_t)TEST_5A_DEC, (int)TEST_5A_SBIT, TEST_5A_EXPECTED);
+	printf("                                        input = %u, start_bit = %d, RESULT = %u\n", (uint32_t)TEST_5A_DEC, (int)TEST_5A_SBIT, output);
+
+	output = grab_three_bits((uint32_t)TEST_5B_DEC, (int)TEST_5B_SBIT);
+
+	if (output == EXIT_BIT_FAILURE) {
+		printf("test_grab_three_bits: TEST_B (FAILURE): Return code %d from grab_three_bits", output);
+		return EXIT_TEST_FAILURE;
+	}
+
+	printf("test_grab_three_bits: TEST_B (SUCCESS): input = %u, start_bit = %d, EXPECT = %u\n", (uint32_t)TEST_5B_DEC, (int)TEST_5B_SBIT, TEST_5B_EXPECTED);
+	printf("                                        input = %u, start_bit = %d, RESULT = %u\n", (uint32_t)TEST_5B_DEC, (int)TEST_5B_SBIT, output);
+
+	return EXIT_TEST_SUCCESS;
 }
 
 char* test_hexdump(char* str, size_t size, const void* loc, size_t nbytes) {
