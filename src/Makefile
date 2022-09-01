@@ -30,7 +30,7 @@ LINKLIBS=
 #	 -Wall   : turns on most, but not all, compiler warnings
 #	 -Wextra : turns on some, but not all, compiler warnings not controlled by -Wall
 #	 -Werror : makes all warnings into errors
-CFLAGS= -g -Wall  ${HDIR} ${SRCDIR}
+CFLAGS= -g -Wall -Werror ${HDIR} ${SRCDIR}
 
 # Name of Build Target
 TARGET= main
