@@ -72,7 +72,7 @@
 	- TEST_5A_EXPECTED would be changed to the expected result: (5u)
 		- This will be the result of grabbing the three consecutive bits and shifting them all the way right. In this case, bits [4:6] were 0b101
 
-## test_uint_to_binstr
+## test_hexdump
 
 - 
 
